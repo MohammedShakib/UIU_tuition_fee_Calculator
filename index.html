@@ -14,6 +14,35 @@
       background-position: center;
       background-repeat: no-repeat;
     }
+
+    /* BUBBLE EFFECT */
+    .bubbles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 50%;
+      animation: rise 12s infinite ease-in;
+    }
+
+    @keyframes rise {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) scale(0.5);
+        opacity: 0;
+      }
+    }
   </style>
 
   <script>
@@ -30,29 +59,54 @@
 
       document.getElementById("firstInstallment").innerHTML =
         `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small class='text-gray-600'>Last Date: Mar 17, 2025 (Mon)</small>`;
-
       document.getElementById("secondInstallment").innerHTML =
         `<strong>2nd Installment (30%)</strong>: ${second} Taka<br><small class='text-gray-600'>Last Date: Apr 13, 2025 (Sun)</small>`;
-
       document.getElementById("thirdInstallment").innerHTML =
         `<strong>3rd Installment (30%)</strong>: ${third} Taka<br><small class='text-gray-600'>Last Date: May 13, 2025 (Tue)</small>`;
 
       document.getElementById("installmentSection").classList.remove("hidden");
       document.getElementById("resetBtn").classList.remove("hidden");
-      document.getElementById("calculateBtn").classList.add("hidden"); // ✅ Hide calculate button
+      document.getElementById("calculateBtn").classList.add("hidden");
     }
 
     function resetCalculator() {
       document.getElementById("amount").value = '';
       document.getElementById("installmentSection").classList.add("hidden");
       document.getElementById("resetBtn").classList.add("hidden");
-      document.getElementById("calculateBtn").classList.remove("hidden"); // ✅ Show it back
+      document.getElementById("calculateBtn").classList.remove("hidden");
     }
   </script>
 </head>
 
-<body class="min-h-screen flex items-center justify-center">
-  <div class="bg-white/50 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl max-w-md w-full">
+<body class="min-h-screen flex items-center justify-center relative z-10">
+
+  <!-- BUBBLES ANIMATION BACKGROUND -->
+  <div class="bubbles">
+    <div class="bubble" style="left: 10%; width: 25px; height: 25px; animation-delay: 0s;"></div>
+    <div class="bubble" style="left: 25%; width: 15px; height: 15px; animation-delay: 2s;"></div>
+    <div class="bubble" style="left: 40%; width: 35px; height: 35px; animation-delay: 4s;"></div>
+    <div class="bubble" style="left: 55%; width: 20px; height: 20px; animation-delay: 1s;"></div>
+    <div class="bubble" style="left: 70%; width: 30px; height: 30px; animation-delay: 3s;"></div>
+    <div class="bubble" style="left: 85%; width: 18px; height: 18px; animation-delay: 5s;"></div>
+    <div class="bubble" style="left: 30%; width: 22px; height: 22px; animation-delay: 6s;"></div>
+    <div class="bubble" style="left: 60%; width: 16px; height: 16px; animation-delay: 7s;"></div>
+    <div class="bubble" style="left: 80%; width: 28px; height: 28px; animation-delay: 8s;"></div>
+    <div class="bubble" style="left: 10%; width: 25px; height: 25px; animation-delay: 0s;"></div>
+    <div class="bubble" style="left: 25%; width: 15px; height: 15px; animation-delay: 2s;"></div>
+    <div class="bubble" style="left: 40%; width: 35px; height: 35px; animation-delay: 12s;"></div>
+    <div class="bubble" style="left: 55%; width: 20px; height: 20px; animation-delay: 13s;"></div>
+    <div class="bubble" style="left: 70%; width: 30px; height: 30px; animation-delay: 3s;"></div>
+    <div class="bubble" style="left: 85%; width: 18px; height: 18px; animation-delay: 5s;"></div>
+    <div class="bubble" style="left: 30%; width: 22px; height: 22px; animation-delay: 6s;"></div>
+    <div class="bubble" style="left: 60%; width: 16px; height: 16px; animation-delay: 11s;"></div>
+    <div class="bubble" style="left: 80%; width: 28px; height: 28px; animation-delay: 10s;"></div>
+  </div>
+
+  <!-- RAIN ANIMATION BACKGROUND -->
+  <canvas id="rainCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+  <!-- CALCULATOR CARD -->
+  <div class="bg-white/50 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl max-w-md w-full relative z-10">
     <img src="./uiu logo.png" alt="UIU Logo" class="w-32 h-auto mx-auto mb-4" />
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Tuition Fee Calculator!</h1>
     <p class="text-center text-gray-700 font-semibold mb-4">Enter the total amount:</p>
@@ -67,7 +121,7 @@
     </button>
 
     <button id="resetBtn" onclick="resetCalculator()"
-      class="hidden w-full bg-red-500 text-white py-2 font-semibold rounded hover:bg-gray-600 transition mb-4">
+      class="hidden w-full bg-red-500 text-white py-2 font-semibold rounded hover:bg-red-600 transition mb-4">
       Reset
     </button>
 
@@ -78,5 +132,57 @@
       <p id="thirdInstallment" class="text-gray-800 font-medium mb-3"></p>
     </div>
   </div>
+
+  <!-- RAIN SCRIPT -->
+  <script>
+    const canvas = document.getElementById('rainCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const drops = [];
+    const numDrops = 120;
+
+    for (let i = 0; i < numDrops; i++) {
+      drops.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        length: Math.random() * 15 + 10,
+        speed: Math.random() * 4 + 2,
+        opacity: Math.random() * 0.3 + 0.1
+      });
+    }
+
+    function drawRain() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+
+      for (let drop of drops) {
+        ctx.beginPath();
+        ctx.moveTo(drop.x, drop.y);
+        ctx.lineTo(drop.x, drop.y + drop.length);
+        ctx.stroke();
+
+        drop.y += drop.speed;
+        if (drop.y > height) {
+          drop.y = -drop.length;
+          drop.x = Math.random() * width;
+        }
+      }
+
+      requestAnimationFrame(drawRain);
+    }
+
+    drawRain();
+  </script>
+
 </body>
 </html>
