@@ -28,11 +28,25 @@
       const second = (amount * 0.3).toFixed(2);
       const third = (amount * 0.3).toFixed(2);
 
-      document.getElementById("firstInstallment").innerText = `1st Installment (40%): ${first} Taka`;
-      document.getElementById("secondInstallment").innerText = `2nd Installment (30%): ${second} Taka`;
-      document.getElementById("thirdInstallment").innerText = `3rd Installment (30%): ${third} Taka`;
+      document.getElementById("firstInstallment").innerHTML =
+        `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small class='text-gray-600'>Last Date: Mar 17, 2025 (Mon)</small>`;
+
+      document.getElementById("secondInstallment").innerHTML =
+        `<strong>2nd Installment (30%)</strong>: ${second} Taka<br><small class='text-gray-600'>Last Date: Apr 13, 2025 (Sun)</small>`;
+
+      document.getElementById("thirdInstallment").innerHTML =
+        `<strong>3rd Installment (30%)</strong>: ${third} Taka<br><small class='text-gray-600'>Last Date: May 13, 2025 (Tue)</small>`;
 
       document.getElementById("installmentSection").classList.remove("hidden");
+      document.getElementById("resetBtn").classList.remove("hidden");
+      document.getElementById("calculateBtn").classList.add("hidden"); // ✅ Hide calculate button
+    }
+
+    function resetCalculator() {
+      document.getElementById("amount").value = '';
+      document.getElementById("installmentSection").classList.add("hidden");
+      document.getElementById("resetBtn").classList.add("hidden");
+      document.getElementById("calculateBtn").classList.remove("hidden"); // ✅ Show it back
     }
   </script>
 </head>
@@ -40,25 +54,28 @@
 <body class="min-h-screen flex items-center justify-center">
   <div class="bg-white/50 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl max-w-md w-full">
     <img src="./uiu logo.png" alt="UIU Logo" class="w-32 h-auto mx-auto mb-4" />
-
-    <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">Tuition Fee Calculator!</h1>
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Tuition Fee Calculator!</h1>
     <p class="text-center text-gray-700 font-semibold mb-4">Enter the total amount:</p>
 
     <input id="amount" type="number" placeholder="50000"
-  class="w-full p-3 rounded border border-gray-300 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-  onkeydown="if(event.key==='Enter'){calculateInstallments();}" />
+      class="w-full p-3 rounded border border-gray-300 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      onkeydown="if(event.key==='Enter'){calculateInstallments();}" />
 
-
-    <button onclick="calculateInstallments()"
-      class="w-full bg-orange-500 text-white py-2 font-semibold rounded hover:bg-orange-600 transition">
+    <button id="calculateBtn" onclick="calculateInstallments()"
+      class="w-full bg-orange-500 text-white py-2 font-semibold rounded hover:bg-orange-600 transition mb-3">
       Calculate Installments
     </button>
 
-    <div id="installmentSection" class="mt-6 text-center hidden">
-      <h2 class="text-lg font-bold text-gray-800 mb-2">Installment Breakdown</h2>
-      <p id="firstInstallment" class="text-gray-700 font-medium"></p>
-      <p id="secondInstallment" class="text-gray-700 font-medium"></p>
-      <p id="thirdInstallment" class="text-gray-700 font-medium"></p>
+    <button id="resetBtn" onclick="resetCalculator()"
+      class="hidden w-full bg-red-500 text-white py-2 font-semibold rounded hover:bg-gray-600 transition mb-4">
+      Reset
+    </button>
+
+    <div id="installmentSection" class="mt-4 text-left hidden">
+      <h2 class="text-lg font-bold text-gray-800 mb-2 text-center">Installment Breakdown</h2>
+      <p id="firstInstallment" class="text-gray-800 font-medium mb-3"></p>
+      <p id="secondInstallment" class="text-gray-800 font-medium mb-3"></p>
+      <p id="thirdInstallment" class="text-gray-800 font-medium mb-3"></p>
     </div>
   </div>
 </body>
