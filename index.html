@@ -12,7 +12,7 @@
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
+      height: 100dvh; /* ✅ Full screen on mobile */
       background-image: url('./UIU-Banner-New-scaled.jpg');
       background-size: cover;
       background-position: center;
@@ -76,9 +76,9 @@
   </script>
 </head>
 
-<body class="flex items-center justify-center min-h-screen relative z-10 p-4">
+<body class="min-h-[100dvh] w-full flex items-center justify-center relative z-10 p-4">
 
-  <!-- Bubble Background -->
+  <!-- Bubble Animation Background -->
   <div class="bubbles">
     <div class="bubble" style="left:10%;width:25px;height:25px;animation-delay:0s;"></div>
     <div class="bubble" style="left:25%;width:15px;height:15px;animation-delay:2s;"></div>
@@ -88,11 +88,11 @@
     <div class="bubble" style="left:85%;width:18px;height:18px;animation-delay:5s;"></div>
   </div>
 
-  <!-- Rain Animation -->
+  <!-- Rain Animation Canvas -->
   <canvas id="rainCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
 
   <!-- Tuition Fee Calculator Card -->
-  <div class="bg-white/70 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl w-full max-w-md relative z-10">
+  <div class="bg-white/80 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl w-full max-w-md relative z-10">
     <img src="./uiu logo.png" alt="UIU Logo" class="w-24 h-auto mx-auto mb-4" />
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Tuition Fee Calculator!</h1>
     <p class="text-center text-gray-700 font-semibold mb-4">Enter the total amount:</p>
