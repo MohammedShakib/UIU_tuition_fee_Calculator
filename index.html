@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UIU: Tuition Fee</title>
+  <link rel="shortcut icon" href="./uiu logo.png" type="image/x-icon" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background-image: url('./UIU-Banner-New-scaled.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+  </style>
+
+  <script>
+    function calculateInstallments() {
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid amount");
+        return;
+      }
+
+      const first = (amount * 0.4).toFixed(2);
+      const second = (amount * 0.3).toFixed(2);
+      const third = (amount * 0.3).toFixed(2);
+
+      document.getElementById("firstInstallment").innerText = `1st Installment (40%): ${first} Taka`;
+      document.getElementById("secondInstallment").innerText = `2nd Installment (30%): ${second} Taka`;
+      document.getElementById("thirdInstallment").innerText = `3rd Installment (30%): ${third} Taka`;
+
+      document.getElementById("installmentSection").classList.remove("hidden");
+    }
+  </script>
+</head>
+
+<body class="min-h-screen flex items-center justify-center">
+  <div class="bg-white/50 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl max-w-md w-full">
+    <img src="./uiu logo.png" alt="UIU Logo" class="w-32 h-auto mx-auto mb-4" />
+
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">Tuition Fee Calculator!</h1>
+    <p class="text-center text-gray-700 font-semibold mb-4">Enter the total amount:</p>
+
+    <input id="amount" type="number" placeholder="50000`"
+      class="w-full p-3 rounded border border-gray-300 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+
+    <button onclick="calculateInstallments()"
+      class="w-full bg-orange-500 text-white py-2 font-semibold rounded hover:bg-orange-600 transition">
+      Calculate Installments
+    </button>
+
+    <div id="installmentSection" class="mt-6 text-center hidden">
+      <h2 class="text-lg font-bold text-gray-800 mb-2">Installment Breakdown</h2>
+      <p id="firstInstallment" class="text-gray-700 font-medium"></p>
+      <p id="secondInstallment" class="text-gray-700 font-medium"></p>
+      <p id="thirdInstallment" class="text-gray-700 font-medium"></p>
+    </div>
+  </div>
+</body>
+</html>
