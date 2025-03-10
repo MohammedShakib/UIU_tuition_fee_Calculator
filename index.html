@@ -47,16 +47,16 @@
     <div class="bubble" style="left:45%;width:25px;height:25px;animation-delay:3s;"></div>
   </div>
 
-  <!-- Rain Effect -->
+  <!-- Rain Canvas -->
   <canvas id="rainCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
 
-  <!-- Calculator Card -->
+  <!-- Tuition Calculator Box -->
   <div class="bg-white/80 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl w-full max-w-md z-10 relative">
     <img src="./uiu logo.png" alt="UIU Logo" class="w-24 h-auto mx-auto mb-4" />
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-1">Tuition Fee Calculator</h1>
     <p class="text-center text-gray-600 mb-4 text-sm">Calculate your fees with or without scholarship</p>
 
-    <!-- Toggle -->
+    <!-- Toggle Switch -->
     <div class="flex items-center justify-between mb-3">
       <span class="text-gray-700 font-medium">Scholarship</span>
       <label class="relative inline-flex items-center cursor-pointer">
@@ -66,19 +66,18 @@
       </label>
     </div>
 
-    <!-- Dropdown -->
+    <!-- Scholarship Dropdown -->
     <div id="scholarshipDropdown" class="hidden mb-4">
       <label for="scholarshipSelect" class="block text-sm font-medium text-gray-700 mb-1">Select Scholarship:</label>
       <select id="scholarshipSelect"
         class="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
-        
         <option value="25">25% Scholarship</option>
         <option value="50">50% Scholarship</option>
         <option value="100">100% Scholarship</option>
       </select>
     </div>
 
-    <!-- Amount -->
+    <!-- Input Field -->
     <input id="amount" type="number" placeholder="Enter total amount"
       class="w-full p-3 rounded border border-gray-300 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
       onkeydown="if(event.key==='Enter'){calculateInstallments();}" />
@@ -94,7 +93,7 @@
       Reset
     </button>
 
-    <!-- Result -->
+    <!-- Result Section -->
     <div id="installmentSection" class="mt-4 text-left hidden">
       <h2 class="text-lg font-bold text-gray-800 mb-2 text-center">Installment Breakdown</h2>
       <p id="firstInstallment" class="text-gray-800 font-medium mb-3"></p>
@@ -103,27 +102,28 @@
     </div>
   </div>
 
-  <!-- Script -->
+  <!-- JavaScript Logic -->
   <script>
     const scholarshipToggle = document.getElementById("scholarshipToggle");
     const scholarshipDropdown = document.getElementById("scholarshipDropdown");
     const scholarshipSelect = document.getElementById("scholarshipSelect");
     const amountInput = document.getElementById("amount");
 
-    // Toggle show/hide dropdown and recalculate if value exists
+    // Toggle event
     scholarshipToggle.addEventListener("change", () => {
       if (scholarshipToggle.checked) {
         scholarshipDropdown.classList.remove("hidden");
+        scholarshipSelect.value = "25"; // Set default to 25%
       } else {
         scholarshipDropdown.classList.add("hidden");
         scholarshipSelect.value = "0";
       }
+
       if (amountInput.value.trim() !== "") {
         calculateInstallments();
       }
     });
 
-    // Recalculate on scholarship change
     scholarshipSelect.addEventListener("change", () => {
       if (amountInput.value.trim() !== "") {
         calculateInstallments();
@@ -132,22 +132,24 @@
 
     function calculateInstallments() {
       const amount = parseFloat(amountInput.value);
-      const scholarship = scholarshipToggle.checked ? parseFloat(scholarshipSelect.value) : 0;
-      const discounted = amount - (amount * scholarship / 100);
-
-      if (isNaN(discounted)) {
+      if (isNaN(amount) || amount <= 0) {
         alert("Please enter a valid amount");
         return;
       }
 
-      if (discounted <= 0) {
-        alert("You don’t need to pay anything!");
-        return;
-      }
+      const scholarship = scholarshipToggle.checked ? parseFloat(scholarshipSelect.value) : 0;
+      const discounted = amount - (amount * scholarship / 100);
 
-      const first = (discounted * 0.4).toFixed(2);
-      const second = (discounted * 0.3).toFixed(2);
-      const third = (discounted * 0.3).toFixed(2);
+      let first, second, third;
+
+      if (scholarship === 100) {
+        first = second = third = "0.00";
+        alert("You don’t need to pay anything!");
+      } else {
+        first = (discounted * 0.4).toFixed(2);
+        second = (discounted * 0.3).toFixed(2);
+        third = (discounted * 0.3).toFixed(2);
+      }
 
       document.getElementById("firstInstallment").innerHTML =
         `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small>Last Date: Mar 17, 2025 (Mon)</small>`;
@@ -168,16 +170,14 @@
       document.getElementById("calculateBtn").classList.remove("hidden");
     }
 
-    // Rain effect
+    // Rain Animation
     const canvas = document.getElementById('rainCanvas');
     const ctx = canvas.getContext('2d');
     let width, height;
-
     function resizeCanvas() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     }
-
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
