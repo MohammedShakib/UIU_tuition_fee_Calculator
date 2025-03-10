@@ -1,6 +1,6 @@
 {
     "name": "UIU Tuition Fee Calculator",
-    "short_name": "UIU FeeCalc",
+    "short_name": "UIU Tuition Fee",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#ffffff",
