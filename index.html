@@ -15,6 +15,7 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      position: relative;
     }
     .bubbles {
       position: fixed;
@@ -34,10 +35,36 @@
       0% { transform: translateY(0) scale(1); opacity: 1; }
       100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
     }
+    .custom-toggle {
+      width: 44px;
+      height: 24px;
+      background: #fff;
+      border: 2px solid #000;
+      border-radius: 9999px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .custom-toggle-circle {
+      width: 18px;
+      height: 18px;
+      background: #000;
+      border-radius: 9999px;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: left 0.3s, background 0.3s;
+    }
+    .custom-toggle.active {
+      background: #000;
+    }
+    .custom-toggle.active .custom-toggle-circle {
+      left: 23px;
+      background: #fff;
+    }
   </style>
 </head>
 <body class="flex items-center justify-center p-4 relative z-10">
-
   <div class="bubbles">
     <div class="bubble" style="left:5%;width:15px;height:15px;animation-delay:0s;"></div>
     <div class="bubble" style="left:15%;width:20px;height:20px;animation-delay:2s;"></div>
@@ -45,116 +72,89 @@
     <div class="bubble" style="left:35%;width:18px;height:18px;animation-delay:1s;"></div>
     <div class="bubble" style="left:45%;width:25px;height:25px;animation-delay:3s;"></div>
   </div>
-
   <canvas id="rainCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
+  <canvas id="lightningCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
 
-  <div class="bg-white/80 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl w-full max-w-md z-10 relative md:space-y-3 space-y-2">
+  <div class="bg-white/80 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl w-full max-w-md z-10 relative space-y-2">
     <img src="./uiu logo.png" alt="UIU Logo" class="w-24 h-auto mx-auto mb-2" />
     <h1 class="text-2xl font-bold text-center text-gray-800 leading-tight">Tuition Fee Calculator</h1>
     <p class="text-center text-gray-600 text-sm leading-tight">Calculate your fees with or without scholarship</p>
-
-    <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center justify-between">
       <span class="text-gray-700 font-medium">Scholarship</span>
-      <label class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" id="scholarshipToggle" class="sr-only peer">
-        <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
-        <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all duration-300 peer-checked:translate-x-full"></div>
-      </label>
+      <div id="customToggle" class="custom-toggle" onclick="toggleScholarship()">
+        <div class="custom-toggle-circle"></div>
+      </div>
     </div>
-
-    <div id="scholarshipDropdown" class="hidden mb-2">
+    <div id="scholarshipDropdown" class="hidden">
       <label for="scholarshipSelect" class="block text-sm font-medium text-gray-700 mb-1">Select Scholarship:</label>
-      <select id="scholarshipSelect"
-        class="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <select id="scholarshipSelect" class="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
         <option value="25">25% Scholarship</option>
         <option value="50">50% Scholarship</option>
         <option value="100">100% Scholarship</option>
       </select>
     </div>
-
-    <input id="amount" type="number" placeholder="Enter total amount"
-      class="w-full p-2 rounded border border-gray-300 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      onkeydown="if(event.key==='Enter'){calculateInstallments();}" />
-
-    <button id="calculateBtn" onclick="calculateInstallments()"
-      class="w-full bg-orange-500 text-white py-2 font-semibold rounded hover:bg-orange-600 transition mb-2">
-      Calculate Installments
-    </button>
-
-    <button id="resetBtn" onclick="resetCalculator()"
-      class="hidden w-full bg-red-500 text-white py-2 font-semibold rounded hover:bg-red-600 transition mb-3">
-      Reset
-    </button>
-
-    <div id="installmentSection" class="text-left hidden space-y-2">
+    <input id="amount" type="number" placeholder="Enter total amount" class="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" onkeydown="if(event.key==='Enter'){calculateInstallments();}" />
+    <button id="calculateBtn" onclick="calculateInstallments()" class="w-full bg-orange-500 text-white py-2 font-semibold rounded hover:bg-orange-600 transition">Calculate Installments</button>
+    <button id="resetBtn" onclick="resetCalculator()" class="hidden w-full bg-red-500 text-white py-2 font-semibold rounded hover:bg-red-600 transition">Reset</button>
+    <div id="installmentSection" class="text-left hidden">
       <h2 class="text-lg font-bold text-gray-800 text-center">Installment Breakdown</h2>
       <p id="firstInstallment" class="text-gray-800 font-medium"></p>
       <p id="secondInstallment" class="text-gray-800 font-medium"></p>
       <p id="thirdInstallment" class="text-gray-800 font-medium"></p>
     </div>
   </div>
-
   <script>
-    const scholarshipToggle = document.getElementById("scholarshipToggle");
+    let scholarshipOn = false;
+    const toggle = document.getElementById("customToggle");
     const scholarshipDropdown = document.getElementById("scholarshipDropdown");
     const scholarshipSelect = document.getElementById("scholarshipSelect");
     const amountInput = document.getElementById("amount");
+    const installmentSection = document.getElementById("installmentSection");
+    const firstInstallment = document.getElementById("firstInstallment");
+    const secondInstallment = document.getElementById("secondInstallment");
+    const thirdInstallment = document.getElementById("thirdInstallment");
 
-    scholarshipToggle.addEventListener("change", () => {
-      if (scholarshipToggle.checked) {
-        scholarshipDropdown.classList.remove("hidden");
-        scholarshipSelect.value = "25";
-      } else {
-        scholarshipDropdown.classList.add("hidden");
-        scholarshipSelect.value = "0";
-      }
-      if (amountInput.value.trim() !== "") {
-        calculateInstallments();
-      }
-    });
+    function toggleScholarship() {
+      scholarshipOn = !scholarshipOn;
+      toggle.classList.toggle("active");
+      scholarshipDropdown.classList.toggle("hidden", !scholarshipOn);
+      scholarshipSelect.value = scholarshipOn ? "25" : "0";
+      if (amountInput.value.trim() !== "") calculateInstallments();
+    }
 
     scholarshipSelect.addEventListener("change", () => {
-      if (amountInput.value.trim() !== "") {
-        calculateInstallments();
-      }
+      if (amountInput.value.trim() !== "") calculateInstallments();
     });
 
     function calculateInstallments() {
       const amount = parseFloat(amountInput.value);
+      const scholarship = scholarshipOn ? parseFloat(scholarshipSelect.value) : 0;
       if (isNaN(amount) || amount <= 0) {
         alert("Please enter a valid amount");
         return;
       }
-
-      const scholarship = scholarshipToggle.checked ? parseFloat(scholarshipSelect.value) : 0;
       const discounted = amount - (amount * scholarship / 100);
-
-      let first, second, third;
-
+      firstInstallment.innerHTML = secondInstallment.innerHTML = thirdInstallment.innerHTML = "";
       if (scholarship === 100) {
-        first = second = third = "0.00";
-        alert("You don’t need to pay anything!");
+        document.querySelector("#installmentSection h2").classList.add("hidden");
+        firstInstallment.innerHTML = `<p class="text-center font-semibold text-gray-800">You only need to pay 5000.00 Taka for registration.</p>`;
       } else {
-        first = (discounted * 0.4).toFixed(2);
-        second = (discounted * 0.3).toFixed(2);
-        third = (discounted * 0.3).toFixed(2);
+        document.querySelector("#installmentSection h2").classList.remove("hidden");
+        const first = (discounted * 0.4).toFixed(2);
+        const second = (discounted * 0.3).toFixed(2);
+        const third = (discounted * 0.3).toFixed(2);
+        firstInstallment.innerHTML = `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small>Last Date: Mar 17, 2025 (Mon)</small>`;
+        secondInstallment.innerHTML = `<strong>2nd Installment (30%)</strong>: ${second} Taka<br><small>Last Date: Apr 13, 2025 (Sun)</small>`;
+        thirdInstallment.innerHTML = `<strong>3rd Installment (30%)</strong>: ${third} Taka<br><small>Last Date: May 13, 2025 (Tue)</small>`;
       }
-
-      document.getElementById("firstInstallment").innerHTML =
-        `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small>Last Date: Mar 17, 2025 (Mon)</small>`;
-      document.getElementById("secondInstallment").innerHTML =
-        `<strong>2nd Installment (30%)</strong>: ${second} Taka<br><small>Last Date: Apr 13, 2025 (Sun)</small>`;
-      document.getElementById("thirdInstallment").innerHTML =
-        `<strong>3rd Installment (30%)</strong>: ${third} Taka<br><small>Last Date: May 13, 2025 (Tue)</small>`;
-
-      document.getElementById("installmentSection").classList.remove("hidden");
+      installmentSection.classList.remove("hidden");
       document.getElementById("resetBtn").classList.remove("hidden");
       document.getElementById("calculateBtn").classList.add("hidden");
     }
 
     function resetCalculator() {
       amountInput.value = '';
-      document.getElementById("installmentSection").classList.add("hidden");
+      installmentSection.classList.add("hidden");
       document.getElementById("resetBtn").classList.add("hidden");
       document.getElementById("calculateBtn").classList.remove("hidden");
     }
@@ -167,21 +167,13 @@
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     }
-
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
     const drops = [];
     for (let i = 0; i < 100; i++) {
-      drops.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        length: Math.random() * 15 + 10,
-        speed: Math.random() * 4 + 2,
-        opacity: Math.random() * 0.3 + 0.1
-      });
+      drops.push({ x: Math.random() * width, y: Math.random() * height, length: Math.random() * 15 + 10, speed: Math.random() * 4 + 2, opacity: Math.random() * 0.3 + 0.1 });
     }
-
     function drawRain() {
       ctx.clearRect(0, 0, width, height);
       ctx.strokeStyle = 'rgba(255,255,255,0.2)';
@@ -192,14 +184,44 @@
         ctx.lineTo(drop.x, drop.y + drop.length);
         ctx.stroke();
         drop.y += drop.speed;
-        if (drop.y > height) {
-          drop.y = -drop.length;
-          drop.x = Math.random() * width;
-        }
+        if (drop.y > height) { drop.y = -drop.length; drop.x = Math.random() * width; }
       }
       requestAnimationFrame(drawRain);
     }
     drawRain();
+
+    // Lightning effect
+    const lightningCanvas = document.getElementById('lightningCanvas');
+    const lCtx = lightningCanvas.getContext('2d');
+    function drawLightning() {
+      lightningCanvas.width = window.innerWidth;
+      lightningCanvas.height = window.innerHeight;
+      lCtx.clearRect(0, 0, width, height);
+
+      const startX = Math.random() * width;
+      const startY = 0;
+      let x = startX;
+      let y = startY;
+      lCtx.beginPath();
+      lCtx.moveTo(x, y);
+      for (let i = 0; i < 10; i++) {
+        x += (Math.random() - 0.5) * 80;
+        y += Math.random() * 80;
+        lCtx.lineTo(x, y);
+      }
+      lCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      lCtx.shadowBlur = 15;
+      lCtx.shadowColor = 'rgba(255, 255, 255, 0.9)';
+      lCtx.lineWidth = 2;
+      lCtx.stroke();
+
+      setTimeout(() => lCtx.clearRect(0, 0, width, height), 300);
+      setTimeout(triggerLightning, Math.random() * 8000 + 3000);
+    }
+    function triggerLightning() {
+      drawLightning();
+    }
+    triggerLightning();
   </script>
 </body>
 </html>
