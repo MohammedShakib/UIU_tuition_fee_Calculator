@@ -62,6 +62,22 @@
       left: 23px;
       background: #fff;
     }
+    .countdown-timer {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .countdown-box {
+      background-color: #111827;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      text-align: center;
+    }
   </style>
 </head>
 <body class="flex items-center justify-center p-4 relative z-10">
@@ -73,7 +89,6 @@
     <div class="bubble" style="left:45%;width:25px;height:25px;animation-delay:3s;"></div>
   </div>
   <canvas id="rainCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
-  <canvas id="lightningCanvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
 
   <div class="bg-white/80 backdrop-blur-lg border border-white/30 shadow-2xl p-6 rounded-2xl w-full max-w-md z-10 relative space-y-2">
     <img src="./uiu logo.png" alt="UIU Logo" class="w-24 h-auto mx-auto mb-2" />
@@ -98,11 +113,10 @@
     <button id="resetBtn" onclick="resetCalculator()" class="hidden w-full bg-red-500 text-white py-2 font-semibold rounded hover:bg-red-600 transition">Reset</button>
     <div id="installmentSection" class="text-left hidden">
       <h2 class="text-lg font-bold text-gray-800 text-center">Installment Breakdown</h2>
-      <p id="firstInstallment" class="text-gray-800 font-medium"></p>
-      <p id="secondInstallment" class="text-gray-800 font-medium"></p>
-      <p id="thirdInstallment" class="text-gray-800 font-medium"></p>
+      <div id="installmentContainer" class="space-y-3 text-center text-gray-800 font-medium"></div>
     </div>
   </div>
+
   <script>
     let scholarshipOn = false;
     const toggle = document.getElementById("customToggle");
@@ -110,9 +124,7 @@
     const scholarshipSelect = document.getElementById("scholarshipSelect");
     const amountInput = document.getElementById("amount");
     const installmentSection = document.getElementById("installmentSection");
-    const firstInstallment = document.getElementById("firstInstallment");
-    const secondInstallment = document.getElementById("secondInstallment");
-    const thirdInstallment = document.getElementById("thirdInstallment");
+    const container = document.getElementById("installmentContainer");
 
     function toggleScholarship() {
       scholarshipOn = !scholarshipOn;
@@ -126,34 +138,60 @@
       if (amountInput.value.trim() !== "") calculateInstallments();
     });
 
-    function getDaysLeft(targetDateStr) {
-      const today = new Date();
-      const targetDate = new Date(targetDateStr);
-      const diffTime = targetDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? `${diffDays} day${diffDays > 1 ? 's' : ''} left` : 'Deadline passed';
+    function createCountdown(targetDate, parent) {
+      const cdBox = document.createElement("div");
+      cdBox.className = "countdown-timer";
+      parent.appendChild(cdBox);
+      function update() {
+        const now = new Date();
+        let diff = new Date(targetDate) - now;
+        if (diff <= 0) {
+          parent.removeChild(cdBox);
+          showNextCountdown();
+          return;
+        }
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((diff / (1000 * 60)) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        cdBox.innerHTML = `
+          <div class="countdown-box">${d}<br><small>DAYS</small></div>
+          <div class="countdown-box">${h}<br><small>HOURS</small></div>
+          <div class="countdown-box">${m}<br><small>MINUTES</small></div>
+          <div class="countdown-box">${s}<br><small>SECONDS</small></div>`;
+      }
+      update();
+      return setInterval(update, 1000);
+    }
+
+    let countdownIndex = 0;
+    const dates = [
+      { label: "1st Installment (40%)", date: "2025-03-17T23:59:59" },
+      { label: "2nd Installment (30%)", date: "2025-04-13T23:59:59" },
+      { label: "3rd Installment (30%)", date: "2025-05-13T23:59:59" },
+    ];
+
+    function showNextCountdown() {
+      countdownIndex++;
+      if (countdownIndex < dates.length) {
+        calculateInstallments();
+      }
     }
 
     function calculateInstallments() {
       const amount = parseFloat(amountInput.value);
       const scholarship = scholarshipOn ? parseFloat(scholarshipSelect.value) : 0;
-      if (isNaN(amount) || amount <= 0) {
-        alert("Please enter a valid amount");
-        return;
-      }
+      if (isNaN(amount) || amount <= 0) return alert("Please enter a valid amount");
       const discounted = amount - (amount * scholarship / 100);
-      firstInstallment.innerHTML = secondInstallment.innerHTML = thirdInstallment.innerHTML = "";
-      if (scholarship === 100) {
-        document.querySelector("#installmentSection h2").classList.add("hidden");
-        firstInstallment.innerHTML = `<p class="text-center font-semibold text-gray-800">You only need to pay 5000.00 Taka for registration.</p>`;
-      } else {
-        document.querySelector("#installmentSection h2").classList.remove("hidden");
-        const first = (discounted * 0.4).toFixed(2);
-        const second = (discounted * 0.3).toFixed(2);
-        const third = (discounted * 0.3).toFixed(2);
-        firstInstallment.innerHTML = `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small>Last Date: Mar 17, 2025 (Mon) — <span class="text-red-500 font-semibold">${getDaysLeft('2025-03-17')}</span></small>`;
-        secondInstallment.innerHTML = `<strong>2nd Installment (30%)</strong>: ${second} Taka<br><small>Last Date: Apr 13, 2025 (Sun) — <span class="text-red-500 font-semibold">${getDaysLeft('2025-04-13')}</span></small>`;
-        thirdInstallment.innerHTML = `<strong>3rd Installment (30%)</strong>: ${third} Taka<br><small>Last Date: May 13, 2025 (Tue) — <span class="text-red-500 font-semibold">${getDaysLeft('2025-05-13')}</span></small>`;
+      container.innerHTML = "";
+      let i = 0;
+      for (const { label, date } of dates) {
+        const amountVal = ((i === 0 ? 0.4 : 0.3) * discounted).toFixed(2);
+        const block = document.createElement("div");
+        block.innerHTML = `<strong>${label}</strong>: ${amountVal} Taka<br><small>Last Date: ${new Date(date).toDateString()}</small>`;
+        container.appendChild(block);
+        if (i === countdownIndex) createCountdown(date, block);
+        i++;
       }
       installmentSection.classList.remove("hidden");
       document.getElementById("resetBtn").classList.remove("hidden");
@@ -162,6 +200,7 @@
 
     function resetCalculator() {
       amountInput.value = '';
+      container.innerHTML = '';
       installmentSection.classList.add("hidden");
       document.getElementById("resetBtn").classList.add("hidden");
       document.getElementById("calculateBtn").classList.remove("hidden");
