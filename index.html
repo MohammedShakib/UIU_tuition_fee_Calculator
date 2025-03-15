@@ -126,6 +126,14 @@
       if (amountInput.value.trim() !== "") calculateInstallments();
     });
 
+    function getDaysLeft(targetDateStr) {
+      const today = new Date();
+      const targetDate = new Date(targetDateStr);
+      const diffTime = targetDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? `${diffDays} day${diffDays > 1 ? 's' : ''} left` : 'Deadline passed';
+    }
+
     function calculateInstallments() {
       const amount = parseFloat(amountInput.value);
       const scholarship = scholarshipOn ? parseFloat(scholarshipSelect.value) : 0;
@@ -143,9 +151,9 @@
         const first = (discounted * 0.4).toFixed(2);
         const second = (discounted * 0.3).toFixed(2);
         const third = (discounted * 0.3).toFixed(2);
-        firstInstallment.innerHTML = `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small>Last Date: Mar 17, 2025 (Mon)</small>`;
-        secondInstallment.innerHTML = `<strong>2nd Installment (30%)</strong>: ${second} Taka<br><small>Last Date: Apr 13, 2025 (Sun)</small>`;
-        thirdInstallment.innerHTML = `<strong>3rd Installment (30%)</strong>: ${third} Taka<br><small>Last Date: May 13, 2025 (Tue)</small>`;
+        firstInstallment.innerHTML = `<strong>1st Installment (40%)</strong>: ${first} Taka<br><small>Last Date: Mar 17, 2025 (Mon) — <span class="text-red-500 font-semibold">${getDaysLeft('2025-03-17')}</span></small>`;
+        secondInstallment.innerHTML = `<strong>2nd Installment (30%)</strong>: ${second} Taka<br><small>Last Date: Apr 13, 2025 (Sun) — <span class="text-red-500 font-semibold">${getDaysLeft('2025-04-13')}</span></small>`;
+        thirdInstallment.innerHTML = `<strong>3rd Installment (30%)</strong>: ${third} Taka<br><small>Last Date: May 13, 2025 (Tue) — <span class="text-red-500 font-semibold">${getDaysLeft('2025-05-13')}</span></small>`;
       }
       installmentSection.classList.remove("hidden");
       document.getElementById("resetBtn").classList.remove("hidden");
@@ -162,14 +170,12 @@
     const canvas = document.getElementById('rainCanvas');
     const ctx = canvas.getContext('2d');
     let width, height;
-
     function resizeCanvas() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-
     const drops = [];
     for (let i = 0; i < 100; i++) {
       drops.push({ x: Math.random() * width, y: Math.random() * height, length: Math.random() * 15 + 10, speed: Math.random() * 4 + 2, opacity: Math.random() * 0.3 + 0.1 });
@@ -189,39 +195,6 @@
       requestAnimationFrame(drawRain);
     }
     drawRain();
-
-    // Lightning effect
-    const lightningCanvas = document.getElementById('lightningCanvas');
-    const lCtx = lightningCanvas.getContext('2d');
-    function drawLightning() {
-      lightningCanvas.width = window.innerWidth;
-      lightningCanvas.height = window.innerHeight;
-      lCtx.clearRect(0, 0, width, height);
-
-      const startX = Math.random() * width;
-      const startY = 0;
-      let x = startX;
-      let y = startY;
-      lCtx.beginPath();
-      lCtx.moveTo(x, y);
-      for (let i = 0; i < 10; i++) {
-        x += (Math.random() - 0.5) * 80;
-        y += Math.random() * 80;
-        lCtx.lineTo(x, y);
-      }
-      lCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      lCtx.shadowBlur = 15;
-      lCtx.shadowColor = 'rgba(255, 255, 255, 0.9)';
-      lCtx.lineWidth = 2;
-      lCtx.stroke();
-
-      setTimeout(() => lCtx.clearRect(0, 0, width, height), 300);
-      setTimeout(triggerLightning, Math.random() * 8000 + 3000);
-    }
-    function triggerLightning() {
-      drawLightning();
-    }
-    triggerLightning();
   </script>
 </body>
 </html>
